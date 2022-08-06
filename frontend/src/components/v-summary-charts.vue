@@ -136,7 +136,6 @@
         .summary-chart__title--percentile(
           v-if="filterGroupSelection === 'groupByNone' && sortGroupSelection.includes('totalCommits')"
         ) {{ getPercentile(j) }} %
-
       .summary-chart__ramp(
         v-on:click="openTabZoomSubrange(user, $event, isGroupMerged(getGroupName(repo)))"
       )
@@ -166,10 +165,18 @@
             )
         template(v-else)
           .summary-chart__contrib(
-            v-bind:title="'Total contribution from ' + minDate + ' to ' + maxDate + ': '\
-              + user.checkedFileTypeContribution + ' lines'"
+            v-bind:title=`'Total contribution from ' + minDate + ' to ' + maxDate + ': '\
+              + user.checkedFileTypeContribution + ' lines ' \
+            + getContributionPercentile(user.checkedFileTypeContribution, repo) + '%' \
+            + " of the repo\'s total lines of code"`
           )
             .summary-chart__contrib--bar(
+              v-if="contributionPercentageShown",
+              v-for="width in getContributionBars(user.checkedFileTypeContribution)",
+              v-bind:style="{ width: getContributionPercentile(user.checkedFileTypeContribution, repo) + '%' }"
+            )
+            .summary-chart__contrib--bar(
+              v-else,
               v-for="width in getContributionBars(user.checkedFileTypeContribution)",
               v-bind:style="{ width: width+'%' }"
             )
@@ -185,7 +192,7 @@ export default {
   components: {
     vRamp,
   },
-  props: ['checkedFileTypes', 'filtered', 'avgContributionSize', 'filterBreakdown',
+  props: ['checkedFileTypes', 'filtered', 'avgContributionSize', 'filterBreakdown', 'contributionPercentageShown',
       'filterGroupSelection', 'filterTimeFrame', 'filterSinceDate', 'filterUntilDate', 'isMergeGroup',
       'minDate', 'maxDate', 'filterSearch', 'sortGroupSelection'],
   data() {
@@ -441,6 +448,10 @@ export default {
         return (Math.round(((index + 1) * 1000) / this.filtered[0].length) / 10).toFixed(1);
       }
       return (Math.round(((index + 1) * 1000) / this.filtered.length) / 10).toFixed(1);
+    },
+
+    getContributionPercentile(personalContribution, repo) {
+      return ((personalContribution / this.getGroupTotalContribution(repo)) * 100).toFixed(2);
     },
 
     getGroupName(group) {

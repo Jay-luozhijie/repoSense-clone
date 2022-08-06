@@ -151,7 +151,7 @@
         .overlay
 
       .summary-chart__contribution
-        template(v-if="filterBreakdown")
+        template(v-if="filterBreakdown && !contributionPercentageShown")
           .summary-chart__contrib(
             v-for="(widths, fileType) in getFileTypeContributionBars(user.fileTypeContribution)"
           )
@@ -163,17 +163,26 @@
                 + 'total: ' + user.checkedFileTypeContribution + ' lines ' + '(contribution from ' + minDate + ' to '\
                 + maxDate + ')'"
             )
+        template(v-else-if="filterBreakdown && contributionPercentageShown")
+          .summary-chart__contrib
+            .summary-chart__contrib--bar(
+              v-for="(width, fileType) in getFileTypeContributionPercentage(user.fileTypeContribution,repo)",
+              v-bind:style="{ width: width + '%','background-color': fileTypeColors[fileType] }",
+              v-bind:title="fileType + ': ' + user.fileTypeContribution[fileType] + ' lines, '\
+                + 'total: ' + user.checkedFileTypeContribution + ' lines ' + '(contribution from ' + minDate + ' to '\
+                + maxDate + ')'"
+            )
         template(v-else)
           .summary-chart__contrib(
             v-bind:title=`'Total contribution from ' + minDate + ' to ' + maxDate + ': '\
               + user.checkedFileTypeContribution + ' lines ' \
-            + getContributionPercentile(user.checkedFileTypeContribution, repo) + '%' \
+            + getContributionPercentage(user.checkedFileTypeContribution, repo) + '%' \
             + " of the repo\'s total lines of code"`
           )
             .summary-chart__contrib--bar(
               v-if="contributionPercentageShown",
               v-for="width in getContributionBars(user.checkedFileTypeContribution)",
-              v-bind:style="{ width: getContributionPercentile(user.checkedFileTypeContribution, repo) + '%' }"
+              v-bind:style="{ width: getContributionPercentage(user.checkedFileTypeContribution, repo) + '%' }"
             )
             .summary-chart__contrib--bar(
               v-else,
@@ -236,6 +245,20 @@ export default {
     },
   },
   methods: {
+    getFileTypeContributionPercentage(fileTypeContribution, repo) {
+      const totalContribution = this.getGroupTotalContribution(repo);
+      const allFileTypesContributionBars = {};
+      const fullBarWidth = 100;
+      Object.keys(fileTypeContribution)
+          .filter((fileType) => this.checkedFileTypes.includes(fileType))
+          .forEach((fileType) => {
+            const contribution = fileTypeContribution[fileType];
+            const barWidth = (contribution / totalContribution) * fullBarWidth;
+            allFileTypesContributionBars[fileType] = barWidth;
+          });
+      return allFileTypesContributionBars;
+    },
+
     getFileTypeContributionBars(fileTypeContribution) {
       let currentBarWidth = 0;
       const fullBarWidth = 100;
@@ -450,7 +473,7 @@ export default {
       return (Math.round(((index + 1) * 1000) / this.filtered.length) / 10).toFixed(1);
     },
 
-    getContributionPercentile(personalContribution, repo) {
+    getContributionPercentage(personalContribution, repo) {
       return ((personalContribution / this.getGroupTotalContribution(repo)) * 100).toFixed(2);
     },
 

@@ -110,7 +110,10 @@
             .tooltip(v-show="!file.active")
               font-awesome-icon(icon="caret-right", fixed-width)
               span.tooltip-text Click to show file details
-            span {{ i + 1 }}. &nbsp;&nbsp; {{ file.path }} &nbsp;
+            .tooltip
+              span {{ i + 1 }}. &nbsp;&nbsp; {{ file.path }} &nbsp;
+              span.tooltip-text(v-show="file.active") This is the file path. Click to hide file details
+              span.tooltip-text(v-show="!file.active") This is the file path. Click to show file details
           span.icons
             a(
               v-bind:href="getHistoryLink(file)", target="_blank"

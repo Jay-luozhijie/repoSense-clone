@@ -73,6 +73,16 @@
             v-bind:disabled="filterGroupSelection === 'groupByNone'"
           )
           span merge all groups
+        label.contribution-percentage-shown(
+          v-bind:style="filterGroupSelection === 'groupByRepos' ? { opacity:1.0 } : { opacity:0.5 }"
+        )
+          input.mui-checkbox(
+            type="checkbox",
+            v-model="contributionPercentageShown",
+            v-on:change="toggleBreakdown",
+            v-bind:disabled="filterGroupSelection != 'groupByRepos'"
+          )
+          span show contribution percentage bar
   .error-message-box(v-if="Object.entries(errorMessages).length")
     .error-message-box__close-button(v-on:click="dismissTab($event)") &times;
     .error-message-box__message The following issues occurred when analyzing the following repositories:
@@ -117,6 +127,7 @@
     v-bind:avg-contribution-size="avgContributionSize",
     v-bind:filter-group-selection="filterGroupSelection",
     v-bind:filter-breakdown="filterBreakdown",
+    v-bind:contribution-percentage-shown="contributionPercentageShown",
     v-bind:filter-time-frame="filterTimeFrame",
     v-bind:filter-since-date="filterSinceDate",
     v-bind:filter-until-date="filterUntilDate",
@@ -158,6 +169,7 @@ export default {
       isSortingWithinDsc: '',
       filterTimeFrame: 'commit',
       filterBreakdown: false,
+      contributionPercentageShown: false,
       tmpFilterSinceDate: '',
       tmpFilterUntilDate: '',
       hasModifiedSinceDate: window.isSinceDateProvided,

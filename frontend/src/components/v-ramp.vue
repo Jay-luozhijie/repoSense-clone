@@ -3,11 +3,27 @@
   template(v-if="tframe === 'commit'")
     template(v-for="(slice, j) in user.commits")
       a.ramp__slice(
+        v-if="!isBrokenLink(getLink(commit))"
         draggable="false",
         v-on:click="rampClick",
         v-for="(commit, k) in slice.commitResults.filter(commitResult => commitResult.insertions > 0)",
         v-bind:href="getLink(commit)", target="_blank",
         v-bind:title="getContributionMessage(slice, commit)",
+        v-bind:class="'ramp__slice--color' + getSliceColor(slice.date)",
+        v-bind:style="{\
+          zIndex: user.commits.length - j,\
+          borderLeftWidth: getWidth(commit) + 'em',\
+          right: ((getSlicePos(slice.date)\
+            + (getCommitPos(k, slice.commitResults.length))) * 100) + '%'\
+          }"
+      )
+      a.ramp__slice.broken-link(
+        v-else,
+        draggable="false",
+        v-on:click="rampClick",
+        v-for="(commit, k) in slice.commitResults.filter(commitResult => commitResult.insertions > 0)",
+        target="_blank",
+        v-bind:title="'This remote link is unsupported'",
         v-bind:class="'ramp__slice--color' + getSliceColor(slice.date)",
         v-bind:style="{\
           zIndex: user.commits.length - j,\
@@ -45,6 +61,11 @@ export default {
   methods: {
     getLink(commit) {
       return window.getCommitLink(commit.repoId, commit.hash);
+    },
+
+    isBrokenLink(link) {
+      const linkFormat = /^(https:\/\/)(github.com|bitbucket.org|gitlab.com).*/;
+      return !linkFormat.test(link);
     },
     getWidth(slice) {
       if (slice.insertions === 0) {

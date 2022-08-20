@@ -113,19 +113,35 @@
             span {{ i + 1 }}. &nbsp;&nbsp; {{ file.path }} &nbsp;
           span.icons
             a(
+              v-if="!isBrokenLink(getHistoryLink(file))",
               v-bind:href="getHistoryLink(file)", target="_blank"
             )
               .tooltip
                 font-awesome-icon.button(icon="history")
                 span.tooltip-text Click to view the history view of file
+            a.broken-link(
+              v-else-if="isBrokenLink(getHistoryLink(file))",
+              target="_blank"
+            )
+              .tooltip
+                font-awesome-icon.button(icon="history")
+                span.tooltip-text This remote link is unsupported
             a(
-              v-if='!file.isBinary',
+              v-if='!file.isBinary && !isBrokenLink(getBlameLink(file))',
               v-bind:href="getBlameLink(file)", target="_blank",
               title="click to view the blame view of file"
             )
               .tooltip
                 font-awesome-icon.button(icon="user-edit")
                 span.tooltip-text Click to view the blame view of file
+            a.broken-link(
+              v-else-if='!file.isBinary && isBrokenLink(getBlameLink(file))',
+              target="_blank",
+              title="click to view the blame view of file"
+            )
+              .tooltip
+                font-awesome-icon.button(icon="user-edit")
+                span.tooltip-text This remote link is unsupported
           span.fileTypeLabel(
             v-if='!file.isBinary && !file.isIgnored',
             v-bind:style="{\
@@ -665,6 +681,11 @@ export default {
 
     ignoredFilesCount() {
       return this.files.filter((file) => file.isIgnored).length;
+    },
+
+    isBrokenLink(link) {
+      const linkFormat = /^(https:\/\/)(github.com|bitbucket.org|gitlab.com).*/;
+      return !linkFormat.test(link);
     },
 
     ...mapState({

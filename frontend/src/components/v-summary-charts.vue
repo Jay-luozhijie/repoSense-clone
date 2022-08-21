@@ -36,13 +36,6 @@
         .tooltip
           font-awesome-icon.icon-button(:icon="['fas', 'chevron-down']")
           span.tooltip-text Click to expand group
-      a.disabled(
-        v-if="filterGroupSelection === 'groupByRepos' && !isBrokenLink(getRepoLink(repo[0]))",
-        target="_blank"
-      )
-        .tooltip
-          font-awesome-icon.icon-button(:icon="getRepoIcon(repo[0])")
-          span.tooltip-text broken!
       a(
         v-if="filterGroupSelection === 'groupByRepos' && !isBrokenLink(getRepoLink(repo[0]))",
         v-bind:href="getRepoLink(repo[0])",target="_blank"
@@ -255,12 +248,6 @@ export default {
 
     filteredRepos() {
       return this.filtered.filter((repo) => repo.length > 0);
-    },
-
-    isBrokenLink(link) {
-      const linkFormat = /^(https:\/\/www.)(github.com|bitbucket.org|gitlab.com)/;
-      console.log(linkFormat.test(link));
-      return !linkFormat.test(link);
     },
 
     ...mapState(['mergedGroups', 'fileTypeColors']),

@@ -587,6 +587,11 @@ export default {
       return window.getBlameLink(this.info.repo, repo.branch, file.path);
     },
 
+    isBrokenLink(link) {
+      const linkFormat = /^(https:\/\/)(github.com|bitbucket.org|gitlab.com).*/;
+      return !linkFormat.test(link);
+    },
+
     getFileTypeBlankLineInfo(fileType) {
       return `${fileType}: Blank: ${
         this.fileTypeBlankLinesObj[fileType]}, Non-Blank: ${
@@ -681,11 +686,6 @@ export default {
 
     ignoredFilesCount() {
       return this.files.filter((file) => file.isIgnored).length;
-    },
-
-    isBrokenLink(link) {
-      const linkFormat = /^(https:\/\/)(github.com|bitbucket.org|gitlab.com).*/;
-      return !linkFormat.test(link);
     },
 
     ...mapState({
